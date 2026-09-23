@@ -2002,7 +2002,27 @@ export class BaileysStartupService extends ChannelStartupService {
         messageId,
         quoted,
       });
-      const id = await this.client.relayMessage(sender, message, { messageId });
+      const id = await this.client.relayMessage(sender, message, {
+        messageId,
+        additionalNodes: [
+          {
+            tag: 'biz',
+            attrs: {},
+            content: [
+              {
+                tag: 'interactive',
+                attrs: { type: 'native_flow', v: '1' },
+                content: [
+                  {
+                    tag: 'native_flow',
+                    attrs: { v: '9', name: 'mixed' },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      });
       m.key = { id: id, remoteJid: sender, participant: isPnUser(sender) ? sender : undefined, fromMe: true };
       for (const [key, value] of Object.entries(m)) {
         if (!value || (isArray(value) && value.length) === 0) {
@@ -3206,34 +3226,30 @@ export class BaileysStartupService extends ChannelStartupService {
     });
 
     const message: proto.IMessage = {
-      viewOnceMessage: {
-        message: {
-          interactiveMessage: {
-            body: {
-              text: (() => {
-                let t = '*' + data.title + '*';
-                if (data?.description) {
-                  t += '\n\n';
-                  t += data.description;
-                  t += '\n';
-                }
-                return t;
-              })(),
-            },
-            footer: { text: data?.footer },
-            header: (() => {
-              if (generate?.message?.imageMessage) {
-                return {
-                  hasMediaAttachment: !!generate.message.imageMessage,
-                  imageMessage: generate.message.imageMessage,
-                };
-              }
-            })(),
-            nativeFlowMessage: {
-              buttons: buttons,
-              messageParamsJson: JSON.stringify({ from: 'api', templateId: v4() }),
-            },
-          },
+      interactiveMessage: {
+        body: {
+          text: (() => {
+            let t = '*' + data.title + '*';
+            if (data?.description) {
+              t += '\n\n';
+              t += data.description;
+              t += '\n';
+            }
+            return t;
+          })(),
+        },
+        footer: { text: data?.footer },
+        header: (() => {
+          if (generate?.message?.imageMessage) {
+            return {
+              hasMediaAttachment: !!generate.message.imageMessage,
+              imageMessage: generate.message.imageMessage,
+            };
+          }
+        })(),
+        nativeFlowMessage: {
+          buttons: buttons,
+          messageParamsJson: JSON.stringify({ from: 'api', templateId: v4() }),
         },
       },
     };
