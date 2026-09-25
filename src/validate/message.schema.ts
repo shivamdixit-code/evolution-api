@@ -340,6 +340,53 @@ export const pollMessageSchema: JSONSchema7 = {
   required: ['number', 'name', 'selectableCount', 'values'],
 };
 
+export const flowMessageSchema: JSONSchema7 = {
+  $id: v4(),
+  type: 'object',
+  properties: {
+    number: { ...numberDefinition },
+    header: { type: 'string', maxLength: 60 },
+    body: { type: 'string', minLength: 1 },
+    footer: { type: 'string', maxLength: 60 },
+    flowId: { type: 'string', minLength: 1 },
+    flowName: { type: 'string', minLength: 1 },
+    flowCta: { type: 'string', minLength: 1, maxLength: 20 },
+    flowToken: { type: 'string' },
+    flowMessageVersion: { type: 'string', enum: ['3'] },
+    mode: { type: 'string', enum: ['published', 'draft'] },
+    flowAction: { type: 'string', enum: ['navigate', 'data_exchange'] },
+    flowActionPayload: {
+      type: 'object',
+      properties: {
+        screen: { type: 'string' },
+        data: { type: 'object' },
+      },
+      additionalProperties: true,
+    },
+    delay: {
+      type: 'integer',
+      description: 'Enter a value in milliseconds',
+    },
+    quoted: { ...quotedOptionsSchema },
+    everyOne: { type: 'boolean', enum: [true, false] },
+    mentioned: {
+      type: 'array',
+      minItems: 1,
+      uniqueItems: true,
+      items: {
+        type: 'string',
+        pattern: '^\\d+',
+        description: '"mentioned" must be an array of numeric strings',
+      },
+    },
+  },
+  required: ['number', 'body', 'flowCta'],
+  anyOf: [
+    { required: ['flowId'] },
+    { required: ['flowName'] },
+  ],
+};
+
 export const listMessageSchema: JSONSchema7 = {
   $id: v4(),
   type: 'object',
