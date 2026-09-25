@@ -340,6 +340,69 @@ export const pollMessageSchema: JSONSchema7 = {
   required: ['number', 'name', 'selectableCount', 'values'],
 };
 
+export const productMessageSchema: JSONSchema7 = {
+  $id: v4(),
+  type: 'object',
+  properties: {
+    number: { ...numberDefinition },
+    title: { type: 'string', minLength: 1 },
+    description: { type: 'string' },
+    body: { type: 'string' },
+    footer: { type: 'string' },
+    productId: { type: 'string', minLength: 1 },
+    retailerId: { type: 'string' },
+    currencyCode: { type: 'string', minLength: 1 },
+    priceAmount1000: { anyOf: [{ type: 'string' }, { type: 'number' }] },
+    productImage: { type: 'string', minLength: 1 },
+    productImageCount: { type: 'integer', minimum: 1 },
+    businessOwnerJid: { type: 'string' },
+    url: { type: 'string' },
+    delay: { type: 'integer' },
+    quoted: { ...quotedOptionsSchema },
+    everyOne: { type: 'boolean', enum: [true, false] },
+    mentioned: { type: 'array', uniqueItems: true, items: { type: 'string', pattern: '^\\d+' } },
+  },
+  required: ['number', 'title', 'productId', 'currencyCode', 'priceAmount1000', 'productImage'],
+};
+
+export const productListMessageSchema: JSONSchema7 = {
+  $id: v4(),
+  type: 'object',
+  properties: {
+    number: { ...numberDefinition },
+    title: { type: 'string', minLength: 1 },
+    text: { type: 'string', minLength: 1 },
+    footer: { type: 'string' },
+    buttonText: { type: 'string', minLength: 1, maxLength: 20 },
+    businessOwnerJid: { type: 'string', minLength: 1 },
+    sections: {
+      type: 'array',
+      minItems: 1,
+      items: {
+        type: 'object',
+        properties: {
+          title: { type: 'string', minLength: 1 },
+          products: {
+            type: 'array',
+            minItems: 1,
+            items: {
+              type: 'object',
+              properties: { productId: { type: 'string', minLength: 1 } },
+              required: ['productId'],
+            },
+          },
+        },
+        required: ['title', 'products'],
+      },
+    },
+    delay: { type: 'integer' },
+    quoted: { ...quotedOptionsSchema },
+    everyOne: { type: 'boolean', enum: [true, false] },
+    mentioned: { type: 'array', uniqueItems: true, items: { type: 'string', pattern: '^\\d+' } },
+  },
+  required: ['number', 'title', 'text', 'buttonText', 'businessOwnerJid', 'sections'],
+};
+
 export const flowMessageSchema: JSONSchema7 = {
   $id: v4(),
   type: 'object',
