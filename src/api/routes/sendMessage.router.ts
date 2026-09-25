@@ -6,6 +6,8 @@ import {
   SendFlowDto,
   SendListDto,
   SendLocationDto,
+  SendProductDto,
+  SendProductListDto,
   SendMediaDto,
   SendPollDto,
   SendPtvDto,
@@ -25,6 +27,8 @@ import {
   locationMessageSchema,
   mediaMessageSchema,
   pollMessageSchema,
+  productListMessageSchema,
+  productMessageSchema,
   ptvMessageSchema,
   reactionMessageSchema,
   statusMessageSchema,
@@ -122,6 +126,24 @@ export class MessageRouter extends RouterBroker {
           execute: (instance) => sendMessageController.sendSticker(instance, bodyData, req.file as any),
         });
 
+        return res.status(HttpStatus.CREATED).json(response);
+      })
+      .post(this.routerPath('sendProduct'), ...guards, async (req, res) => {
+        const response = await this.dataValidate<SendProductDto>({
+          request: req,
+          schema: productMessageSchema,
+          ClassRef: SendProductDto,
+          execute: (instance, data) => sendMessageController.sendProduct(instance, data),
+        });
+        return res.status(HttpStatus.CREATED).json(response);
+      })
+      .post(this.routerPath('sendProductList'), ...guards, async (req, res) => {
+        const response = await this.dataValidate<SendProductListDto>({
+          request: req,
+          schema: productListMessageSchema,
+          ClassRef: SendProductListDto,
+          execute: (instance, data) => sendMessageController.sendProductList(instance, data),
+        });
         return res.status(HttpStatus.CREATED).json(response);
       })
       .post(this.routerPath('sendFlow'), ...guards, async (req, res) => {
