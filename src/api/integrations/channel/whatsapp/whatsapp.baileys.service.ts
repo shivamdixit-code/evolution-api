@@ -3446,7 +3446,7 @@ export class BaileysStartupService extends ChannelStartupService {
               title: data.title,
               description: data.description,
               currencyCode: data.currencyCode,
-              priceAmount1000: String(data.priceAmount1000),
+              priceAmount1000: Number(data.priceAmount1000),
               retailerId: data.retailerId,
               productImageCount: data.productImageCount || 1,
               url: data.url,
