@@ -40,6 +40,7 @@ import {
   SendAudioDto,
   SendButtonsDto,
   SendContactDto,
+  SendFlowDto,
   SendListDto,
   SendLocationDto,
   SendMediaDto,
@@ -3397,6 +3398,78 @@ export class BaileysStartupService extends ChannelStartupService {
             nativeFlowMessage: {
               buttons: buttons,
               messageParamsJson: JSON.stringify({ from: 'api', templateId: v4() }),
+            },
+          },
+        },
+      },
+    };
+
+    return await this.sendMessageWithTyping(data.number, message, {
+      delay: data?.delay,
+      presence: 'composing',
+      quoted: data?.quoted,
+      mentionsEveryOne: data?.mentionsEveryOne,
+      mentioned: data?.mentioned,
+    });
+  }
+
+  public async flowMessage(data: SendFlowDto) {
+    const flowAction = data.flowAction || 'navigate';
+    const flowMessageVersion = data.flowMessageVersion || '3';
+    const mode = data.mode || 'published';
+
+    if (flowMessageVersion !== '3') {
+      throw new BadRequestException('WhatsApp Flow message version must be "3"');
+    }
+
+    if (data.flowCta.length > 20) {
+      throw new BadRequestException('WhatsApp Flow CTA must be 20 characters or less');
+    }
+
+    if (flowAction === 'navigate' && !data.flowActionPayload?.screen) {
+      throw new BadRequestException('flowActionPayload.screen is required for navigate flows');
+    }
+
+    if (flowAction === 'data_exchange' && data.flowActionPayload) {
+      throw new BadRequestException('flowActionPayload must be omitted for data_exchange flows');
+    }
+
+    const parameters: Record<string, any> = {
+      mode,
+      flow_message_version: flowMessageVersion,
+      flow_cta: data.flowCta,
+      flow_action: flowAction,
+    };
+
+    if (data.flowId) parameters.flow_id = data.flowId;
+    if (data.flowName) parameters.flow_name = data.flowName;
+    if (data.flowToken) parameters.flow_token = data.flowToken;
+    if (data.flowActionPayload) parameters.flow_action_payload = data.flowActionPayload;
+
+    const message: proto.IMessage = {
+      viewOnceMessage: {
+        message: {
+          messageContextInfo: {
+            deviceListMetadata: {},
+            deviceListMetadataVersion: 2,
+          },
+          interactiveMessage: {
+            body: {
+              text: data.body,
+            },
+            header: data.header ? { title: data.header } : undefined,
+            footer: data.footer ? { text: data.footer } : undefined,
+            nativeFlowMessage: {
+              buttons: [
+                {
+                  name: 'galaxy_message',
+                  buttonParamsJson: JSON.stringify(parameters),
+                },
+              ],
+              messageParamsJson: JSON.stringify({
+                from: 'api',
+                templateId: v4(),
+              }),
             },
           },
         },
