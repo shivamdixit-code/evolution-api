@@ -1,6 +1,8 @@
 name: Typecheck
 
 on:
+  pull_request:
+    branches: [main]
   push:
     branches: [main, verify-flow-product-build]
   workflow_dispatch:
