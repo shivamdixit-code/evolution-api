@@ -45,6 +45,8 @@ import {
   SendLocationDto,
   SendMediaDto,
   SendPollDto,
+  SendProductDto,
+  SendProductListDto,
   SendPtvDto,
   SendReactionDto,
   SendStatusDto,
