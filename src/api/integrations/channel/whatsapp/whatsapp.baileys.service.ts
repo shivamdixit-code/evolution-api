@@ -3450,8 +3450,6 @@ export class BaileysStartupService extends ChannelStartupService {
               retailerId: data.retailerId,
               productImageCount: data.productImageCount || 1,
               url: data.url,
-              body: data.body,
-              footer: data.footer,
             },
             businessOwnerJid: data.businessOwnerJid || this.instance.wuid,
           },
