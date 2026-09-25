@@ -3,6 +3,7 @@ import {
   SendAudioDto,
   SendButtonsDto,
   SendContactDto,
+  SendFlowDto,
   SendListDto,
   SendLocationDto,
   SendMediaDto,
@@ -19,6 +20,7 @@ import {
   audioMessageSchema,
   buttonsMessageSchema,
   contactMessageSchema,
+  flowMessageSchema,
   listMessageSchema,
   locationMessageSchema,
   mediaMessageSchema,
@@ -118,6 +120,16 @@ export class MessageRouter extends RouterBroker {
           schema: stickerMessageSchema,
           ClassRef: SendStickerDto,
           execute: (instance) => sendMessageController.sendSticker(instance, bodyData, req.file as any),
+        });
+
+        return res.status(HttpStatus.CREATED).json(response);
+      })
+      .post(this.routerPath('sendFlow'), ...guards, async (req, res) => {
+        const response = await this.dataValidate<SendFlowDto>({
+          request: req,
+          schema: flowMessageSchema,
+          ClassRef: SendFlowDto,
+          execute: (instance, data) => sendMessageController.sendFlow(instance, data),
         });
 
         return res.status(HttpStatus.CREATED).json(response);
