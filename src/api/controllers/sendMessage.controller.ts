@@ -6,6 +6,8 @@ import {
   SendFlowDto,
   SendListDto,
   SendLocationDto,
+  SendProductDto,
+  SendProductListDto,
   SendMediaDto,
   SendPollDto,
   SendPtvDto,
@@ -77,6 +79,14 @@ export class SendMessageController {
 
   public async sendButtons({ instanceName }: InstanceDto, data: SendButtonsDto) {
     return await this.waMonitor.waInstances[instanceName].buttonMessage(data);
+  }
+
+  public async sendProduct({ instanceName }: InstanceDto, data: SendProductDto) {
+    return await this.waMonitor.waInstances[instanceName].productMessage(data);
+  }
+
+  public async sendProductList({ instanceName }: InstanceDto, data: SendProductListDto) {
+    return await this.waMonitor.waInstances[instanceName].productListMessage(data);
   }
 
   public async sendFlow({ instanceName }: InstanceDto, data: SendFlowDto) {
