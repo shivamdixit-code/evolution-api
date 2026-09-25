@@ -120,6 +120,26 @@ export class SendButtonsDto extends Metadata {
   buttons: Button[];
 }
 
+export type FlowAction = 'navigate' | 'data_exchange';
+export type FlowMode = 'published' | 'draft';
+
+export class SendFlowDto extends Metadata {
+  header?: string;
+  body: string;
+  footer?: string;
+  flowId?: string;
+  flowName?: string;
+  flowCta: string;
+  flowToken?: string;
+  flowMessageVersion?: '3';
+  mode?: FlowMode;
+  flowAction?: FlowAction;
+  flowActionPayload?: {
+    screen?: string;
+    data?: Record<string, any>;
+  };
+}
+
 export class SendLocationDto extends Metadata {
   latitude: number;
   longitude: number;
