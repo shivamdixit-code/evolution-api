@@ -10,7 +10,6 @@ import {
   SendPollDto,
   SendProductDto,
   SendProductListDto,
-  SendPollDto,
   SendPtvDto,
   SendReactionDto,
   SendStatusDto,
