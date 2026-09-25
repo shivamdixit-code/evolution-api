@@ -460,11 +460,12 @@ export const buttonsMessageSchema: JSONSchema7 = {
         properties: {
           type: {
             type: 'string',
-            enum: ['reply', 'copy', 'url', 'call', 'pix'],
+            enum: ['reply', 'copy', 'url', 'call', 'flow', 'pix'],
           },
           displayText: { type: 'string' },
           id: { type: 'string' },
           url: { type: 'string' },
+          copyCode: { type: 'string', maxLength: 20 },
           phoneNumber: { type: 'string' },
           currency: { type: 'string' },
           name: { type: 'string' },
