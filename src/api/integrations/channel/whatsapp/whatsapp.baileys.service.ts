@@ -3300,6 +3300,7 @@ export class BaileysStartupService extends ChannelStartupService {
     ['copy', 'cta_copy'],
     ['url', 'cta_url'],
     ['call', 'cta_call'],
+    ['flow', 'flow'],
     ['pix', 'payment_info'],
   ]);
 
@@ -3314,6 +3315,18 @@ export class BaileysStartupService extends ChannelStartupService {
   public async buttonMessage(data: SendButtonsDto) {
     if (data.buttons.length === 0) {
       throw new BadRequestException('At least one button is required');
+    }
+
+    const hasFlowButtons = data.buttons.some((btn) => btn.type === 'flow');
+
+    if (hasFlowButtons) {
+      if (data.buttons.length > 1) {
+        throw new BadRequestException('Only one Flow button is allowed');
+      }
+      const flowButton = data.buttons[0];
+      if (!flowButton.id && !flowButton.url && !flowButton.name) {
+        throw new BadRequestException('Flow button requires its Flow configuration');
+      }
     }
 
     const hasReplyButtons = data.buttons.some((btn) => btn.type === 'reply');
