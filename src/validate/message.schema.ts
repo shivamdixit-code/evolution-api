@@ -444,10 +444,7 @@ export const flowMessageSchema: JSONSchema7 = {
     },
   },
   required: ['number', 'body', 'flowCta'],
-  anyOf: [
-    { required: ['flowId'] },
-    { required: ['flowName'] },
-  ],
+  anyOf: [{ required: ['flowId'] }, { required: ['flowName'] }],
 };
 
 export const listMessageSchema: JSONSchema7 = {
