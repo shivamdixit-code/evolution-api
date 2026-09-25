@@ -95,7 +95,7 @@ export class SendAudioDto extends Metadata {
   audio: string;
 }
 
-export type TypeButton = 'reply' | 'copy' | 'url' | 'call' | 'pix';
+export type TypeButton = 'reply' | 'copy' | 'url' | 'call' | 'flow' | 'pix';
 
 export type KeyType = 'phone' | 'email' | 'cpf' | 'cnpj' | 'random';
 
