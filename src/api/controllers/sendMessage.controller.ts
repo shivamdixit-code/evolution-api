@@ -3,6 +3,7 @@ import {
   SendAudioDto,
   SendButtonsDto,
   SendContactDto,
+  SendFlowDto,
   SendListDto,
   SendLocationDto,
   SendMediaDto,
@@ -76,6 +77,10 @@ export class SendMessageController {
 
   public async sendButtons({ instanceName }: InstanceDto, data: SendButtonsDto) {
     return await this.waMonitor.waInstances[instanceName].buttonMessage(data);
+  }
+
+  public async sendFlow({ instanceName }: InstanceDto, data: SendFlowDto) {
+    return await this.waMonitor.waInstances[instanceName].flowMessage(data);
   }
 
   public async sendLocation({ instanceName }: InstanceDto, data: SendLocationDto) {
