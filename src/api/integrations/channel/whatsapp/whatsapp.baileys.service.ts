@@ -3426,6 +3426,73 @@ export class BaileysStartupService extends ChannelStartupService {
     });
   }
 
+  public async productMessage(data: SendProductDto) {
+    const generate = await this.prepareMediaMessage({ mediatype: 'image', media: data.productImage });
+
+    const productImage = generate?.message?.imageMessage;
+    if (!productImage) {
+      throw new BadRequestException('Product image could not be prepared');
+    }
+
+    const message: proto.IMessage = {
+      viewOnceMessage: {
+        message: {
+          productMessage: {
+            product: {
+              productImage,
+              productId: data.productId,
+              title: data.title,
+              description: data.description,
+              currencyCode: data.currencyCode,
+              priceAmount1000: String(data.priceAmount1000),
+              retailerId: data.retailerId,
+              productImageCount: data.productImageCount || 1,
+              url: data.url,
+              body: data.body,
+              footer: data.footer,
+            },
+            businessOwnerJid: data.businessOwnerJid || this.instance.wuid,
+          },
+        },
+      },
+    };
+
+    return await this.sendMessageWithTyping(data.number, message, {
+      delay: data?.delay,
+      presence: 'composing',
+      quoted: data?.quoted,
+      mentionsEveryOne: data?.mentionsEveryOne,
+      mentioned: data?.mentioned,
+    });
+  }
+
+  public async productListMessage(data: SendProductListDto) {
+    const message: proto.IMessage = {
+      listMessage: {
+        title: data.title,
+        description: data.text,
+        footerText: data.footer,
+        buttonText: data.buttonText,
+        listType: 2,
+        productListInfo: {
+          productSections: data.sections.map((section) => ({
+            title: section.title,
+            products: section.products.map((product) => ({ productId: product.productId })),
+          })),
+          businessOwnerJid: data.businessOwnerJid || this.instance.wuid,
+        },
+      },
+    };
+
+    return await this.sendMessageWithTyping(data.number, message, {
+      delay: data?.delay,
+      presence: 'composing',
+      quoted: data?.quoted,
+      mentionsEveryOne: data?.mentionsEveryOne,
+      mentioned: data?.mentioned,
+    });
+  }
+
   public async flowMessage(data: SendFlowDto) {
     const flowAction = data.flowAction || 'navigate';
     const flowMessageVersion = data.flowMessageVersion || '3';
