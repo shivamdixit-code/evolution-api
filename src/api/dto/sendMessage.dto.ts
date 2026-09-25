@@ -123,6 +123,33 @@ export class SendButtonsDto extends Metadata {
 export type FlowAction = 'navigate' | 'data_exchange';
 export type FlowMode = 'published' | 'draft';
 
+export class SendProductDto extends Metadata {
+  title: string;
+  description?: string;
+  body?: string;
+  footer?: string;
+  productId: string;
+  retailerId?: string;
+  currencyCode: string;
+  priceAmount1000: string | number;
+  productImage: string;
+  productImageCount?: number;
+  businessOwnerJid?: string;
+  url?: string;
+}
+
+export class SendProductListDto extends Metadata {
+  title: string;
+  text: string;
+  footer?: string;
+  buttonText: string;
+  businessOwnerJid: string;
+  sections: Array<{
+    title: string;
+    products: Array<{ productId: string }>;
+  }>;
+}
+
 export class SendFlowDto extends Metadata {
   header?: string;
   body: string;
