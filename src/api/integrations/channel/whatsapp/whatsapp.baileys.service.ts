@@ -3406,10 +3406,10 @@ export class BaileysStartupService extends ChannelStartupService {
             },
           );
 
-          return prepared?.message?.audioMessage
+          return prepared?.audioMessage
             ? {
                 hasMediaAttachment: true,
-                audioMessage: prepared.message.audioMessage,
+                audioMessage: prepared.audioMessage,
               }
             : undefined;
         })()
