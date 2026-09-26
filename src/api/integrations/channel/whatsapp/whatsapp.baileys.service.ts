@@ -1994,7 +1994,8 @@ export class BaileysStartupService extends ChannelStartupService {
             }
 
             if (events[Events.LABELS_ASSOCIATION]) {
-              const payload = events[Events.LABELS_ASSOCIATION];              this.labelHandle[Events.LABELS_ASSOCIATION](payload, database);
+              const payload = events[Events.LABELS_ASSOCIATION];
+      this.labelHandle[Events.LABELS_ASSOCIATION](payload, database);
               return;
             }
 
