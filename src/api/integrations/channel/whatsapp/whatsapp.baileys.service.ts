@@ -95,6 +95,7 @@ import { useMultiFileAuthStateRedisDb } from '@utils/use-multi-file-auth-state-r
 import axios from 'axios';
 import makeWASocket, {
   AnyMessageContent,
+  BinaryNode,
   BufferedEventData,
   BufferJSON,
   CacheStore,
