@@ -70,7 +70,6 @@ import {
   Chatwoot,
   ConfigService,
   configService,
-  ConfigSessionPhone,
   Database,
   Log,
   Openai,
@@ -1495,7 +1494,8 @@ export class BaileysStartupService extends ChannelStartupService {
           });
 
           const contactRaw: {
-            remoteJid: string;            pushName: string;
+            remoteJid: string;
+            pushName: string;
             profilePicUrl?: string;
             instanceId: string;
           } = {
