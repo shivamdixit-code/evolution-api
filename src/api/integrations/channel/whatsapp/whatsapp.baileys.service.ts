@@ -147,7 +147,6 @@ import Long from 'long';
 import mimeTypes from 'mime-types';
 import NodeCache from 'node-cache';
 import cron from 'node-cron';
-import { release } from 'os';
 import { join } from 'path';
 import P from 'pino';
 import qrcode, { QRCodeToDataURLOptions } from 'qrcode';
@@ -499,7 +498,8 @@ export class BaileysStartupService extends ChannelStartupService {
           profileName: (await this.getProfileName()) as string,
           profilePicUrl: this.instance.profilePictureUrl,
           connectionStatus: 'open',
-        },      });
+        },
+      });
 
       if (this.configService.get<Chatwoot>('CHATWOOT').ENABLED && this.localChatwoot?.enabled) {
         this.chatwootService.eventWhatsapp(
@@ -579,8 +579,6 @@ export class BaileysStartupService extends ChannelStartupService {
 
   private async createClient(number?: string): Promise<WASocket> {
     this.instance.authState = await this.defineAuthState();
-
-    const session = this.configService.get<ConfigSessionPhone>('CONFIG_SESSION_PHONE');
 
     // Always advertise a real browser/web client identity.
     // WhatsApp started rejecting desktop sub-platform fingerprints with 428
@@ -2164,7 +2162,10 @@ export class BaileysStartupService extends ChannelStartupService {
         messageId,
         quoted,
       });
-      const id = await this.client.relayMessage(sender, message, { messageId, ...(additionalNodes?.length ? { additionalNodes } : {}) });
+      const id = await this.client.relayMessage(sender, message, {
+        messageId,
+        ...(additionalNodes?.length ? { additionalNodes } : {}),
+      });
       m.key = { id: id, remoteJid: sender, participant: isPnUser(sender) ? sender : undefined, fromMe: true };
       for (const [key, value] of Object.entries(m)) {
         if (!value || (isArray(value) && value.length) === 0) {
@@ -2498,7 +2499,14 @@ export class BaileysStartupService extends ChannelStartupService {
               await s3Service.uploadFile(fullName, buffer, size.fileLength?.low, { 'Content-Type': mimetype });
 
               await this.prismaRepository.media.create({
-                data: { messageId: msg.id, instanceId: this.instanceId, type: mediaType, fileName: fullName, mimetype },              });
+                data: {
+                  messageId: msg.id,
+                  instanceId: this.instanceId,
+                  type: mediaType,
+                  fileName: fullName,
+                  mimetype,
+                },
+              });
 
               const mediaUrl = await s3Service.getObjectUrl(fullName);
 
@@ -2997,7 +3005,8 @@ export class BaileysStartupService extends ChannelStartupService {
         quoted: data?.quoted,
         mentionsEveryOne: data?.mentionsEveryOne,
         mentioned: data?.mentioned,
-      },      isIntegration,
+      },
+      isIntegration,
     );
 
     return mediaSent;
@@ -4518,7 +4527,8 @@ export class BaileysStartupService extends ChannelStartupService {
       const group = await this.client.groupMetadata(id);
 
       return group;
-    } catch (error) {      this.logger.error(error);
+    } catch (error) {
+      this.logger.error(error);
       throw new InternalServerErrorException('Error creating group', error.toString());
     }
   }
