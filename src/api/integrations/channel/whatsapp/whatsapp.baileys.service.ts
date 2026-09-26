@@ -497,8 +497,7 @@ export class BaileysStartupService extends ChannelStartupService {
           profileName: (await this.getProfileName()) as string,
           profilePicUrl: this.instance.profilePictureUrl,
           connectionStatus: 'open',
-        },
-      });
+        },      });
 
       if (this.configService.get<Chatwoot>('CHATWOOT').ENABLED && this.localChatwoot?.enabled) {
         this.chatwootService.eventWhatsapp(
@@ -581,16 +580,16 @@ export class BaileysStartupService extends ChannelStartupService {
 
     const session = this.configService.get<ConfigSessionPhone>('CONFIG_SESSION_PHONE');
 
-    let browserOptions = {};
+    // Always advertise a real browser/web client identity.
+    // WhatsApp started rejecting desktop sub-platform fingerprints with 428
+    // on Baileys 7.x; pairing-code connections previously omitted browserOptions.
+    const browser: WABrowserDescription = ['Evolution API', 'Chrome', '4.0.0'];
+    const browserOptions = { browser };
 
     if (number || this.phoneNumber) {
       this.phoneNumber = number;
-
       this.logger.info(`Phone number: ${number}`);
     } else {
-      const browser: WABrowserDescription = [session.CLIENT, session.NAME, release()];
-      browserOptions = { browser };
-
       this.logger.info(`Browser: ${browser}`);
     }
 
@@ -997,7 +996,6 @@ export class BaileysStartupService extends ChannelStartupService {
         if (this.configService.get<Database>('DATABASE').SAVE_DATA.HISTORIC) {
           await this.prismaRepository.chat.createMany({ data: chatsRaw, skipDuplicates: true });
         }
-
         const messagesRaw: any[] = [];
 
         const messagesRepository: Set<string> = new Set(
@@ -1497,8 +1495,7 @@ export class BaileysStartupService extends ChannelStartupService {
           });
 
           const contactRaw: {
-            remoteJid: string;
-            pushName: string;
+            remoteJid: string;            pushName: string;
             profilePicUrl?: string;
             instanceId: string;
           } = {
@@ -1997,8 +1994,7 @@ export class BaileysStartupService extends ChannelStartupService {
             }
 
             if (events[Events.LABELS_ASSOCIATION]) {
-              const payload = events[Events.LABELS_ASSOCIATION];
-              this.labelHandle[Events.LABELS_ASSOCIATION](payload, database);
+              const payload = events[Events.LABELS_ASSOCIATION];              this.labelHandle[Events.LABELS_ASSOCIATION](payload, database);
               return;
             }
 
@@ -2497,8 +2493,7 @@ export class BaileysStartupService extends ChannelStartupService {
               await s3Service.uploadFile(fullName, buffer, size.fileLength?.low, { 'Content-Type': mimetype });
 
               await this.prismaRepository.media.create({
-                data: { messageId: msg.id, instanceId: this.instanceId, type: mediaType, fileName: fullName, mimetype },
-              });
+                data: { messageId: msg.id, instanceId: this.instanceId, type: mediaType, fileName: fullName, mimetype },              });
 
               const mediaUrl = await s3Service.getObjectUrl(fullName);
 
@@ -2997,8 +2992,7 @@ export class BaileysStartupService extends ChannelStartupService {
         quoted: data?.quoted,
         mentionsEveryOne: data?.mentionsEveryOne,
         mentioned: data?.mentioned,
-      },
-      isIntegration,
+      },      isIntegration,
     );
 
     return mediaSent;
@@ -3497,7 +3491,6 @@ export class BaileysStartupService extends ChannelStartupService {
     const flowAction = data.flowAction || 'navigate';
     const flowMessageVersion = data.flowMessageVersion || '3';
     const mode = data.mode || 'published';
-
     if (flowMessageVersion !== '3') {
       throw new BadRequestException('WhatsApp Flow message version must be "3"');
     }
@@ -3712,10 +3705,23 @@ export class BaileysStartupService extends ChannelStartupService {
 
     // Only call Baileys for normal numbers (@s.whatsapp.net) that are not in cache
     let verify: { jid: string; exists: boolean }[] = [];
-    const normalNumbersNotInCache = numbersNotInCache.filter((jid) => !jid.includes('@lid'));
+    // Contacts already known to this Evolution instance do not need a live
+    // onWhatsApp device lookup before every send. That lookup uses the same
+    // Baileys USync socket that can transiently return 428/Connection Closed.
+    const knownContactJids = new Set(
+      contacts
+        .map((contact) => contact.remoteJid)
+        .filter((jid): jid is string => typeof jid === 'string' && jid.length > 0),
+    );
+
+    const normalNumbersNotInCache = numbersNotInCache.filter(
+      (jid) => !jid.includes('@lid') && !knownContactJids.has(jid),
+    );
 
     if (normalNumbersNotInCache.length > 0) {
-      this.logger.verbose(`Checking ${normalNumbersNotInCache.length} numbers via Baileys (not found in cache)`);
+      this.logger.verbose(
+        `Checking ${normalNumbersNotInCache.length} numbers via Baileys (not found in cache or contacts)`,
+      );
       verify = await this.client.onWhatsApp(...normalNumbersNotInCache);
     }
 
@@ -3743,6 +3749,18 @@ export class BaileysStartupService extends ChannelStartupService {
             user.number,
             contacts.find((c) => c.remoteJid === user.jid)?.pushName,
             'lid',
+          );
+        }
+
+        // If not in cache and this is already a stored contact, trust the
+        // instance contact record and let sendMessage perform the real send.
+        if (knownContactJids.has(user.jid)) {
+          return new OnWhatsAppDto(
+            user.jid,
+            true,
+            user.number,
+            contacts.find((c) => c.remoteJid === user.jid)?.pushName,
+            undefined,
           );
         }
 
@@ -3997,7 +4015,6 @@ export class BaileysStartupService extends ChannelStartupService {
       if (!msg) {
         throw 'Message not found';
       }
-
       for (const subtype of MessageSubtype) {
         if (msg.message[subtype]) {
           msg.message = msg.message[subtype].message;
@@ -4497,8 +4514,7 @@ export class BaileysStartupService extends ChannelStartupService {
       const group = await this.client.groupMetadata(id);
 
       return group;
-    } catch (error) {
-      this.logger.error(error);
+    } catch (error) {      this.logger.error(error);
       throw new InternalServerErrorException('Error creating group', error.toString());
     }
   }
@@ -4997,7 +5013,6 @@ export class BaileysStartupService extends ChannelStartupService {
 
   public async baileysCreateParticipantNodes(jids: string[], message: proto.IMessage, extraAttrs: any) {
     const response = await this.client.createParticipantNodes(jids, message, extraAttrs);
-
     const convertedResponse = {
       ...response,
       nodes: response.nodes.map((node: any) => ({
