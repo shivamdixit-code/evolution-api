@@ -22,8 +22,8 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: evoapicloud/evolution-api
-          tags: latest
+          images: iamshivamdixit/wtslyai-evolution
+          tags: 2.3.6-media-buttons-v10
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
