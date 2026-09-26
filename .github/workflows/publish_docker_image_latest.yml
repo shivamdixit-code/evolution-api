@@ -23,7 +23,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: iamshivamdixit/wtslyai-evolution
-          tags: 2.3.6-media-buttons-v10
+          tags: 2.3.6-media-buttons-v11
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
