@@ -156,6 +156,7 @@ import { PassThrough, Readable } from 'stream';
 import { v4 } from 'uuid';
 
 import { BaileysMessageProcessor } from './baileysMessage.processor';
+import { buildInteractiveBizNode } from './helpers/interactiveMessage.helper';
 import { useVoiceCallsBaileys } from './voiceCalls/useVoiceCallsBaileys';
 
 export interface ExtendedIMessageKey extends proto.IMessageKey {
@@ -2135,6 +2136,7 @@ export class BaileysStartupService extends ChannelStartupService {
     messageId?: string,
     ephemeralExpiration?: number,
     contextInfo?: any,
+    additionalNodes?: BinaryNode[],
     // participants?: GroupParticipant[],
   ) {
     sender = sender.toLowerCase();
@@ -2154,14 +2156,14 @@ export class BaileysStartupService extends ChannelStartupService {
     // NOTE: NÃO DEVEMOS GERAR O messageId AQUI, SOMENTE SE VIER INFORMADO POR PARAMETRO. A GERAÇÃO ANTERIOR IMPEDE O WZAP DE IDENTIFICAR A SOURCE.
     if (messageId) option.messageId = messageId;
 
-    if (message['viewOnceMessage']) {
+    if (message['viewOnceMessage'] || message['interactiveMessage']) {
       const m = generateWAMessageFromContent(sender, message, {
         timestamp: new Date(),
         userJid: this.instance.wuid,
         messageId,
         quoted,
       });
-      const id = await this.client.relayMessage(sender, message, { messageId });
+      const id = await this.client.relayMessage(sender, message, { messageId, ...(additionalNodes?.length ? { additionalNodes } : {}) });
       m.key = { id: id, remoteJid: sender, participant: isPnUser(sender) ? sender : undefined, fromMe: true };
       for (const [key, value] of Object.entries(m)) {
         if (!value || (isArray(value) && value.length) === 0) {
@@ -2290,6 +2292,7 @@ export class BaileysStartupService extends ChannelStartupService {
     message: T,
     options?: Options,
     isIntegration = false,
+    additionalNodes?: BinaryNode[],
   ) {
     const isWA = (await this.whatsappNumber({ numbers: [number] }))?.shift();
 
@@ -2414,6 +2417,7 @@ export class BaileysStartupService extends ChannelStartupService {
           null,
           undefined,
           contextInfo,
+          additionalNodes,
         );
       }
 
@@ -3381,45 +3385,44 @@ export class BaileysStartupService extends ChannelStartupService {
     });
 
     const message: proto.IMessage = {
-      viewOnceMessage: {
-        message: {
-          interactiveMessage: {
-            body: {
-              text: (() => {
-                let t = '*' + data.title + '*';
-                if (data?.description) {
-                  t += '\n\n';
-                  t += data.description;
-                  t += '\n';
-                }
-                return t;
-              })(),
-            },
-            footer: { text: data?.footer },
-            header: (() => {
-              if (generate?.message?.imageMessage) {
-                return {
-                  hasMediaAttachment: !!generate.message.imageMessage,
-                  imageMessage: generate.message.imageMessage,
-                };
-              }
-            })(),
-            nativeFlowMessage: {
-              buttons: buttons,
-              messageParamsJson: JSON.stringify({ from: 'api', templateId: v4() }),
-            },
-          },
+      interactiveMessage: {
+        body: {
+          text: (() => {
+            let t = '*' + data.title + '*';
+            if (data?.description) {
+              t += '\n\n';
+              t += data.description;
+            }
+            return t;
+          })(),
+        },
+        footer: data?.footer ? { text: data.footer } : undefined,
+        header: generate?.message?.imageMessage
+          ? {
+              hasMediaAttachment: true,
+              imageMessage: generate.message.imageMessage,
+            }
+          : undefined,
+        nativeFlowMessage: {
+          buttons,
+          messageParamsJson: JSON.stringify({ from: 'api', templateId: v4() }),
         },
       },
     };
 
-    return await this.sendMessageWithTyping(data.number, message, {
-      delay: data?.delay,
-      presence: 'composing',
-      quoted: data?.quoted,
-      mentionsEveryOne: data?.mentionsEveryOne,
-      mentioned: data?.mentioned,
-    });
+    return await this.sendMessageWithTyping(
+      data.number,
+      message,
+      {
+        delay: data?.delay,
+        presence: 'composing',
+        quoted: data?.quoted,
+        mentionsEveryOne: data?.mentionsEveryOne,
+        mentioned: data?.mentioned,
+      },
+      false,
+      [buildInteractiveBizNode()],
+    );
   }
 
   public async productMessage(data: SendProductDto) {
