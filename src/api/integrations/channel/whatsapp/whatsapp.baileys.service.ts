@@ -3390,6 +3390,31 @@ export class BaileysStartupService extends ChannelStartupService {
       }
     })();
 
+    // WhatsApp's InteractiveMessage protobuf supports an audio attachment
+    // in the footer. Prepare the audio through Baileys so the media is
+    // uploaded/encrypted once and the resulting AudioMessage can live inside
+    // the same interactive message as the body and native-flow buttons.
+    const audioFooter = data?.audio
+      ? await (async () => {
+          const audioBuffer = await this.processAudio(data.audio);
+          const prepared = await prepareWAMessageMedia(
+            {
+              audio: audioBuffer,
+            },
+            {
+              upload: this.client.waUploadToServer,
+            },
+          );
+
+          return prepared?.message?.audioMessage
+            ? {
+                hasMediaAttachment: true,
+                audioMessage: prepared.message.audioMessage,
+              }
+            : undefined;
+        })()
+      : undefined;
+
     const buttons = data.buttons.map((value) => {
       return { name: this.mapType.get(value.type), buttonParamsJson: this.toJSONString(value) };
     });
@@ -3406,7 +3431,13 @@ export class BaileysStartupService extends ChannelStartupService {
             return t;
           })(),
         },
-        footer: data?.footer ? { text: data.footer } : undefined,
+        footer:
+          audioFooter || data?.footer
+            ? {
+                ...(data?.footer ? { text: data.footer } : {}),
+                ...(audioFooter || {}),
+              }
+            : undefined,
         header: generate?.message?.imageMessage
           ? {
               hasMediaAttachment: true,
