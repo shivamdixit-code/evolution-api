@@ -3614,7 +3614,7 @@ export class BaileysStartupService extends ChannelStartupService {
           buttonText: data?.buttonText,
           footerText: data?.footerText,
           sections: data.sections,
-          listType: 2,
+          listType: proto.Message.ListMessage.ListType.SINGLE_SELECT,
         },
       },
       {
