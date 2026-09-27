@@ -3359,7 +3359,8 @@ export class BaileysStartupService extends ChannelStartupService {
         });
       }
 
-    const message: proto.IMessage = {
+
+      const message: proto.IMessage = {
         viewOnceMessage: {
           message: {
             interactiveMessage: {
