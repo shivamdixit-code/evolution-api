@@ -3614,7 +3614,7 @@ export class BaileysStartupService extends ChannelStartupService {
           buttonText: data?.buttonText,
           footerText: data?.footerText,
           sections: data.sections,
-          listType: proto.Message.ListMessage.ListType.SINGLE_SELECT,
+          listType: 2,
         },
       },
       {
@@ -3624,19 +3624,6 @@ export class BaileysStartupService extends ChannelStartupService {
         mentionsEveryOne: data?.mentionsEveryOne,
         mentioned: data?.mentioned,
       },
-      false,
-      [
-        {
-          tag: 'biz',
-          attrs: {},
-          content: [
-            {
-              tag: 'list',
-              attrs: { type: 'product_list', v: '2' },
-            },
-          ],
-        } as any,
-      ],
     );
   }
 
