@@ -3355,10 +3355,6 @@ export class BaileysStartupService extends ChannelStartupService {
       if (data.buttons.length > 1) {
         throw new BadRequestException('Only one PIX button is allowed');
       }
-      if (hasOtherButtons) {
-        throw new BadRequestException('PIX button cannot be mixed with other button types');
-      }
-
       if (data?.audio) {
       await this.audioWhatsapp({
         number: data.number,
@@ -3389,16 +3385,26 @@ export class BaileysStartupService extends ChannelStartupService {
       });
     }
 
+    if (data?.audio) {
+      try {
+        await this.audioWhatsapp({
+          number: data.number,
+          audio: data.audio,
+          encoding: true,
+        });
+      } catch (error) {
+        this.logger.warn('Interactive message audio delivery failed; continuing with text and buttons');
+      }
+    }
+
     const generate = await (async () => {
       if (data?.thumbnailUrl) {
         return await this.prepareMediaMessage({ mediatype: 'image', media: data.thumbnailUrl });
       }
     })();
 
-    // InteractiveMessage does not have an audio media field in the
-    // Baileys proto used by this service. Keep audio delivery separate and
-    // reserve this message for the native-flow text + buttons bubble.
-    const audioFooter = undefined;
+    // Baileys interactive messages do not expose a cross-platform audio field.
+    // Keep audio as a separate media message and send text + buttons as one native-flow bubble.
 
     const buttons = data.buttons.map((value) => {
       return { name: this.mapType.get(value.type), buttonParamsJson: this.toJSONString(value) };
