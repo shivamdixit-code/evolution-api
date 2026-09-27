@@ -1995,7 +1995,7 @@ export class BaileysStartupService extends ChannelStartupService {
 
             if (events[Events.LABELS_ASSOCIATION]) {
               const payload = events[Events.LABELS_ASSOCIATION];
-      this.labelHandle[Events.LABELS_ASSOCIATION](payload, database);
+              this.labelHandle[Events.LABELS_ASSOCIATION](payload, database);
               return;
             }
 
@@ -3356,12 +3356,12 @@ export class BaileysStartupService extends ChannelStartupService {
         throw new BadRequestException('Only one PIX button is allowed');
       }
       if (data?.audio) {
-      await this.audioWhatsapp({
-        number: data.number,
-        audio: data.audio,
-        encoding: true,
-      });
-    }
+        await this.audioWhatsapp({
+          number: data.number,
+          audio: data.audio,
+          encoding: true,
+        });
+      }
 
     const message: proto.IMessage = {
         viewOnceMessage: {
@@ -3392,7 +3392,7 @@ export class BaileysStartupService extends ChannelStartupService {
           audio: data.audio,
           encoding: true,
         });
-      } catch (error) {
+      } catch {
         this.logger.warn('Interactive message audio delivery failed; continuing with text and buttons');
       }
     }
