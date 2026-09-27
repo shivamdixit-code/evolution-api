@@ -3624,6 +3624,19 @@ export class BaileysStartupService extends ChannelStartupService {
         mentionsEveryOne: data?.mentionsEveryOne,
         mentioned: data?.mentioned,
       },
+      false,
+      [
+        {
+          tag: 'biz',
+          attrs: {},
+          content: [
+            {
+              tag: 'list',
+              attrs: { type: 'product_list', v: '2' },
+            },
+          ],
+        } as any,
+      ],
     );
   }
 
