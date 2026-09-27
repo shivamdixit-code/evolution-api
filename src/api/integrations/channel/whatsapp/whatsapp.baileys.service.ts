@@ -3344,14 +3344,10 @@ export class BaileysStartupService extends ChannelStartupService {
 
     const hasPixButton = data.buttons.some((btn) => btn.type === 'pix');
 
-    const hasOtherButtons = data.buttons.some((btn) => btn.type !== 'reply' && btn.type !== 'pix');
-
     if (hasReplyButtons) {
-      if (data.buttons.length > 3) {
+      const replyButtonCount = data.buttons.filter((btn) => btn.type === 'reply').length;
+      if (replyButtonCount > 3) {
         throw new BadRequestException('Maximum of 3 reply buttons allowed');
-      }
-      if (hasOtherButtons) {
-        throw new BadRequestException('Reply buttons cannot be mixed with other button types');
       }
     }
 
@@ -3363,7 +3359,15 @@ export class BaileysStartupService extends ChannelStartupService {
         throw new BadRequestException('PIX button cannot be mixed with other button types');
       }
 
-      const message: proto.IMessage = {
+      if (data?.audio) {
+      await this.audioWhatsapp({
+        number: data.number,
+        audio: data.audio,
+        encoding: true,
+      });
+    }
+
+    const message: proto.IMessage = {
         viewOnceMessage: {
           message: {
             interactiveMessage: {
@@ -3391,30 +3395,10 @@ export class BaileysStartupService extends ChannelStartupService {
       }
     })();
 
-    // WhatsApp's InteractiveMessage protobuf supports an audio attachment
-    // in the footer. Prepare the audio through Baileys so the media is
-    // uploaded/encrypted once and the resulting AudioMessage can live inside
-    // the same interactive message as the body and native-flow buttons.
-    const audioFooter = data?.audio
-      ? await (async () => {
-          const audioBuffer = await this.processAudio(data.audio);
-          const prepared = await prepareWAMessageMedia(
-            {
-              audio: audioBuffer,
-            },
-            {
-              upload: this.client.waUploadToServer,
-            },
-          );
-
-          return prepared?.audioMessage
-            ? {
-                hasMediaAttachment: true,
-                audioMessage: prepared.audioMessage,
-              }
-            : undefined;
-        })()
-      : undefined;
+    // InteractiveMessage does not have an audio media field in the
+    // Baileys proto used by this service. Keep audio delivery separate and
+    // reserve this message for the native-flow text + buttons bubble.
+    const audioFooter = undefined;
 
     const buttons = data.buttons.map((value) => {
       return { name: this.mapType.get(value.type), buttonParamsJson: this.toJSONString(value) };
@@ -3432,13 +3416,7 @@ export class BaileysStartupService extends ChannelStartupService {
             return t;
           })(),
         },
-        footer:
-          audioFooter || data?.footer
-            ? {
-                ...(data?.footer ? { text: data.footer } : {}),
-                ...(audioFooter || {}),
-              }
-            : undefined,
+        footer: data?.footer ? { text: data.footer } : undefined,
         header: generate?.message?.imageMessage
           ? {
               hasMediaAttachment: true,
