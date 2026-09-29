@@ -206,6 +206,16 @@ export class MessageRouter extends RouterBroker {
 
         return res.status(HttpStatus.CREATED).json(response);
       })
+      .post(this.routerPath('sendMediaButtons'), ...guards, async (req, res) => {
+        const response = await this.dataValidate<SendButtonsDto>({
+          request: req,
+          schema: buttonsMessageSchema,
+          ClassRef: SendButtonsDto,
+          execute: (instance, data) => sendMessageController.sendMediaButtons(instance, data),
+        });
+
+        return res.status(HttpStatus.CREATED).json(response);
+      })
       .post(this.routerPath('sendButtons'), ...guards, async (req, res) => {
         const response = await this.dataValidate<SendButtonsDto>({
           request: req,
