@@ -510,6 +510,11 @@ export const buttonsMessageSchema: JSONSchema7 = {
   properties: {
     number: { ...numberDefinition },
     thumbnailUrl: { type: 'string' },
+    mediatype: { type: 'string', enum: ['image', 'document', 'video'] },
+    mimetype: { type: 'string' },
+    media: { type: 'string' },
+    fileName: { type: 'string' },
+    caption: { type: 'string' },
     title: { type: 'string' },
     description: { type: 'string' },
     footer: { type: 'string' },
