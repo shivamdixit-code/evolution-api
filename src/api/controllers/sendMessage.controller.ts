@@ -77,7 +77,24 @@ export class SendMessageController {
     }
   }
 
-  public async sendMediaButtons({ instanceName }: InstanceDto, data: SendButtonsDto) {
+  public async sendMediaButtons({ instanceName }: InstanceDto, data: SendButtonsDto, file?: any) {
+    if (file?.buffer) {
+      data = {
+        ...data,
+        media: file.buffer.toString('base64'),
+        mimetype: data.mimetype || file.mimetype,
+        fileName: data.fileName || file.originalname,
+      };
+    }
+
+    if (!data?.media || !data?.mediatype) {
+      throw new BadRequestException('Media and mediatype are required for media buttons');
+    }
+
+    if (!isURL(data.media) && !isBase64(data.media)) {
+      throw new BadRequestException('Media must be a URL, base64, or uploaded file');
+    }
+
     return await this.waMonitor.waInstances[instanceName].buttonMessage(data);
   }
 
