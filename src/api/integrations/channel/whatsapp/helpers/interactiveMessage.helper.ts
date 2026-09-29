@@ -14,7 +14,6 @@ export function buildInteractiveBizNode(): BinaryNode {
   };
 }
 
-
 /**
  * Legacy list-message biz node required by WhatsApp Web/Desktop.
  * This must be sent as an additional relay node; do not clone the protobuf
