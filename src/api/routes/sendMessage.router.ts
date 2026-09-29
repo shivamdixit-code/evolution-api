@@ -188,7 +188,7 @@ export class MessageRouter extends RouterBroker {
         const response = await this.dataValidate<SendPollDto>({
           request: req,
           schema: pollMessageSchema,
-          ClassRef: pollMessageSchema,
+          ClassRef: SendPollDto,
           execute: (instance, data) => sendMessageController.sendPoll(instance, data),
         });
 
