@@ -3394,13 +3394,33 @@ export class BaileysStartupService extends ChannelStartupService {
     }
 
     const generate = await (async () => {
+      if (data?.media && data?.mediatype) {
+        return await this.prepareMediaMessage({
+          mediatype: data.mediatype,
+          media: data.media,
+          mimetype: data.mimetype,
+          fileName: data.fileName,
+          caption: data.caption,
+        });
+      }
+
       if (data?.thumbnailUrl) {
         return await this.prepareMediaMessage({ mediatype: 'image', media: data.thumbnailUrl });
       }
     })();
 
-    // Baileys interactive messages do not expose a cross-platform audio field.
-    // Keep audio as a separate media message and send text + buttons as one native-flow bubble.
+    // Keep the media, caption/body and native-flow buttons in the same
+    // interactive message. Baileys supports prepared image/video/document
+    // media in the interactive header; audio continues to use the existing
+    // separate audio path.
+    const generatedMessage = generate?.message as any;
+    const headerMedia = generatedMessage?.imageMessage
+      ? { hasMediaAttachment: true, imageMessage: generatedMessage.imageMessage }
+      : generatedMessage?.videoMessage
+        ? { hasMediaAttachment: true, videoMessage: generatedMessage.videoMessage }
+        : generatedMessage?.documentMessage
+          ? { hasMediaAttachment: true, documentMessage: generatedMessage.documentMessage }
+          : undefined;
 
     const buttons = data.buttons.map((value) => {
       return { name: this.mapType.get(value.type), buttonParamsJson: this.toJSONString(value) };
@@ -3410,21 +3430,16 @@ export class BaileysStartupService extends ChannelStartupService {
       interactiveMessage: {
         body: {
           text: (() => {
-            let t = '*' + data.title + '*';
-            if (data?.description) {
-              t += '\n\n';
-              t += data.description;
+            let t = '*' + (data.title || '') + '*';
+            const description = data.description || data.caption;
+            if (description) {
+              t += (t === '**' ? '' : '\n\n') + description;
             }
             return t;
           })(),
         },
         footer: data?.footer ? { text: data.footer } : undefined,
-        header: generate?.message?.imageMessage
-          ? {
-              hasMediaAttachment: true,
-              imageMessage: generate.message.imageMessage,
-            }
-          : undefined,
+        header: headerMedia as any,
         nativeFlowMessage: {
           buttons,
           messageParamsJson: JSON.stringify({ from: 'api', templateId: v4() }),
