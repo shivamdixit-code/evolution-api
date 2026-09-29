@@ -68,13 +68,11 @@ export class MessageRouter extends RouterBroker {
         return res.status(HttpStatus.CREATED).json(response);
       })
       .post(this.routerPath('sendMedia'), ...guards, upload.single('file'), async (req, res) => {
-        const bodyData = req.body;
-
         const response = await this.dataValidate<SendMediaDto>({
           request: req,
           schema: mediaMessageSchema,
           ClassRef: SendMediaDto,
-          execute: (instance) => sendMessageController.sendMedia(instance, bodyData, req.file as any),
+          execute: (instance) => sendMessageController.sendMedia(instance, req.body, req.file as any),
         });
 
         return res.status(HttpStatus.CREATED).json(response);
@@ -190,7 +188,7 @@ export class MessageRouter extends RouterBroker {
         const response = await this.dataValidate<SendPollDto>({
           request: req,
           schema: pollMessageSchema,
-          ClassRef: SendPollDto,
+          ClassRef: pollMessageSchema,
           execute: (instance, data) => sendMessageController.sendPoll(instance, data),
         });
 
