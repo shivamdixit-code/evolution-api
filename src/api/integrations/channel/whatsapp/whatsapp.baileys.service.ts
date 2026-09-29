@@ -155,8 +155,14 @@ import { PassThrough, Readable } from 'stream';
 import { v4 } from 'uuid';
 
 import { BaileysMessageProcessor } from './baileysMessage.processor';
-import { buildInteractiveBizNode } from './helpers/interactiveMessage.helper';
+import { buildInteractiveBizNode, buildListBizNode } from './helpers/interactiveMessage.helper';
 import { useVoiceCallsBaileys } from './voiceCalls/useVoiceCallsBaileys';
+
+function normalizeListType(listMessage?: proto.Message.IListMessage | null): void {
+  if (listMessage?.listType === proto.Message.ListMessage.ListType.PRODUCT_LIST) {
+    listMessage.listType = proto.Message.ListMessage.ListType.SINGLE_SELECT;
+  }
+}
 
 export interface ExtendedIMessageKey extends proto.IMessageKey {
   remoteJidAlt?: string;
@@ -676,15 +682,11 @@ export class BaileysStartupService extends ChannelStartupService {
       userDevicesCache: this.userDevicesCache,
       transactionOpts: { maxCommitRetries: 10, delayBetweenTriesMs: 3000 },
       patchMessageBeforeSending(message) {
-        if (
-          message.deviceSentMessage?.message?.listMessage?.listType === proto.Message.ListMessage.ListType.PRODUCT_LIST
-        ) {
-          message.deviceSentMessage.message.listMessage.listType = proto.Message.ListMessage.ListType.SINGLE_SELECT;
-        }
-
-        if (message.listMessage?.listType == proto.Message.ListMessage.ListType.PRODUCT_LIST) {
-          message.listMessage.listType = proto.Message.ListMessage.ListType.SINGLE_SELECT;
-        }
+        // Normalize PRODUCT_LIST -> SINGLE_SELECT in-place. Do not JSON-clone:
+        // Baileys v7 protobuf messages can contain Long fields and cloning them
+        // causes "this.isZero is not a function".
+        normalizeListType(message.deviceSentMessage?.message?.listMessage);
+        normalizeListType(message.listMessage);
 
         return message;
       },
@@ -3620,18 +3622,30 @@ export class BaileysStartupService extends ChannelStartupService {
   }
 
   public async listMessage(data: SendListDto) {
+    // Legacy listMessage + SINGLE_SELECT is the compatible format for
+    // WhatsApp Web/Desktop as well as mobile clients. The biz/list relay node
+    // is required for the list to render instead of being rejected silently.
+    const message: proto.IMessage = {
+      listMessage: {
+        title: data.title || '',
+        description: data.description || '',
+        buttonText: data.buttonText || 'View options',
+        footerText: data.footerText || '',
+        listType: proto.Message.ListMessage.ListType.SINGLE_SELECT,
+        sections: (data.sections || []).map((section) => ({
+          title: section.title || '',
+          rows: (section.rows || []).map((row) => ({
+            title: row.title || '',
+            description: row.description || '',
+            rowId: row.rowId || '',
+          })),
+        })),
+      },
+    };
+
     return await this.sendMessageWithTyping(
       data.number,
-      {
-        listMessage: {
-          title: data.title,
-          description: data.description,
-          buttonText: data?.buttonText,
-          footerText: data?.footerText,
-          sections: data.sections,
-          listType: 2,
-        },
-      },
+      message,
       {
         delay: data?.delay,
         presence: 'composing',
@@ -3639,6 +3653,8 @@ export class BaileysStartupService extends ChannelStartupService {
         mentionsEveryOne: data?.mentionsEveryOne,
         mentioned: data?.mentioned,
       },
+      false,
+      [buildListBizNode()],
     );
   }
 
