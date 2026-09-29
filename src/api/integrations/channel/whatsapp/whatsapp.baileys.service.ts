@@ -2402,11 +2402,11 @@ export class BaileysStartupService extends ChannelStartupService {
           mentionedJid: [],
           groupMentions: [],
           //expiration: 7776000,
-          ephemeralSettingTimestamp: {
-            low: Math.floor(Date.now() / 1000) - 172800,
-            high: 0,
-            unsigned: false,
-          },
+          // Keep protobuf Long fields as real Long instances. Passing a plain
+          // { low, high, unsigned } object here makes Baileys v7's protobuf
+          // serializer call this.isZero() on a non-Long value, which breaks
+          // legacy list messages.
+          ephemeralSettingTimestamp: Long.fromNumber(Math.floor(Date.now() / 1000) - 172800),
           disappearingMode: { initiator: 0 },
         };
         messageSent = await this.sendMessage(
