@@ -77,6 +77,10 @@ export class SendMessageController {
     }
   }
 
+  public async sendMediaButtons({ instanceName }: InstanceDto, data: SendButtonsDto) {
+    return await this.waMonitor.waInstances[instanceName].buttonMessage(data);
+  }
+
   public async sendButtons({ instanceName }: InstanceDto, data: SendButtonsDto) {
     return await this.waMonitor.waInstances[instanceName].buttonMessage(data);
   }
