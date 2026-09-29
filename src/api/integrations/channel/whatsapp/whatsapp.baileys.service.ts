@@ -2154,7 +2154,11 @@ export class BaileysStartupService extends ChannelStartupService {
     // NOTE: NÃO DEVEMOS GERAR O messageId AQUI, SOMENTE SE VIER INFORMADO POR PARAMETRO. A GERAÇÃO ANTERIOR IMPEDE O WZAP DE IDENTIFICAR A SOURCE.
     if (messageId) option.messageId = messageId;
 
-    if (message['viewOnceMessage'] || message['interactiveMessage']) {
+    if (message['viewOnceMessage'] || message['interactiveMessage'] || message['listMessage']) {
+      // Relay legacy lists directly instead of passing them through
+      // Baileys' generic sendMessage/forward path. The generic path can
+      // transform protobuf Long fields into plain objects on Baileys 7.x,
+      // which causes "this.isZero is not a function".
       const m = generateWAMessageFromContent(sender, message, {
         timestamp: new Date(),
         userJid: this.instance.wuid,
