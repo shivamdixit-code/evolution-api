@@ -113,9 +113,14 @@ export class Button {
 }
 
 export class SendButtonsDto extends Metadata {
-  /** Optional audio media embedded in the interactive message footer. */
+  /** Optional media embedded directly in the interactive message header. */
   audio?: string;
   thumbnailUrl?: string;
+  mediatype?: MediaType;
+  mimetype?: string;
+  media?: string;
+  fileName?: string;
+  caption?: string;
   title: string;
   description?: string;
   footer?: string;
