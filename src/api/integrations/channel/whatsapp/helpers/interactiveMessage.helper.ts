@@ -13,3 +13,17 @@ export function buildInteractiveBizNode(): BinaryNode {
     ],
   };
 }
+
+
+/**
+ * Legacy list-message biz node required by WhatsApp Web/Desktop.
+ * This must be sent as an additional relay node; do not clone the protobuf
+ * message because Baileys v7 list messages may contain Long fields.
+ */
+export function buildListBizNode(): BinaryNode {
+  return {
+    tag: 'biz',
+    attrs: {},
+    content: [{ tag: 'list', attrs: { type: 'product_list', v: '2' } }],
+  };
+}
