@@ -14,6 +14,7 @@ import {
   SendPresenceDto,
   UpdateMessageDto,
   WhatsAppNumberDto,
+  RequestPhoneNumberDto,
 } from '@api/dto/chat.dto';
 import { InstanceDto } from '@api/dto/instance.dto';
 import { Query } from '@api/repository/repository.service';
@@ -45,6 +46,16 @@ export class ChatRouter extends RouterBroker {
   constructor(...guards: RequestHandler[]) {
     super();
     this.router
+      .post(this.routerPath('requestPhoneNumber'), ...guards, async (req, res) => {
+        const response = await this.dataValidate<RequestPhoneNumberDto>({
+          request: req,
+          schema: null,
+          ClassRef: RequestPhoneNumberDto,
+          execute: (instance, data) => chatController.requestPhoneNumber(instance, data),
+        });
+
+        return res.status(HttpStatus.OK).json(response);
+      })
       .post(this.routerPath('whatsappNumbers'), ...guards, async (req, res) => {
         try {
           const response = await this.dataValidate<WhatsAppNumberDto>({
