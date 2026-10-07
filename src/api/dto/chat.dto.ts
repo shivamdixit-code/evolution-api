@@ -26,6 +26,10 @@ export class WhatsAppNumberDto {
   numbers: string[];
 }
 
+export class RequestPhoneNumberDto {
+  number: string;
+}
+
 export class NumberDto {
   number: string;
 }
