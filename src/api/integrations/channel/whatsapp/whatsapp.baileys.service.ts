@@ -5054,6 +5054,26 @@ export class BaileysStartupService extends ChannelStartupService {
     );
   }
 
+  public async requestPhoneNumber(numberOrJid: string) {
+    const jid = String(numberOrJid || "").includes("@")
+      ? String(numberOrJid)
+      : createJid(String(numberOrJid));
+
+    if (!jid) {
+      throw new BadRequestException("A WhatsApp JID or number is required");
+    }
+
+    const response = await this.client.sendMessage(jid, {
+      requestPhoneNumber: true,
+    } as any);
+
+    return {
+      success: true,
+      jid,
+      messageId: response?.key?.id || null,
+    };
+  }
+
   public async baileysOnWhatsapp(jid: string) {
     const response = await this.client.onWhatsApp(jid);
 
