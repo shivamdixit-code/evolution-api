@@ -13,6 +13,7 @@ import {
   SendPresenceDto,
   UpdateMessageDto,
   WhatsAppNumberDto,
+  RequestPhoneNumberDto,
 } from '@api/dto/chat.dto';
 import { InstanceDto } from '@api/dto/instance.dto';
 import { Query } from '@api/repository/repository.service';
@@ -24,6 +25,10 @@ export class ChatController {
 
   public async whatsappNumber({ instanceName }: InstanceDto, data: WhatsAppNumberDto) {
     return await this.waMonitor.waInstances[instanceName].whatsappNumber(data);
+  }
+
+  public async requestPhoneNumber({ instanceName }: InstanceDto, data: RequestPhoneNumberDto) {
+    return await this.waMonitor.waInstances[instanceName].requestPhoneNumber(data.number);
   }
 
   public async readMessage({ instanceName }: InstanceDto, data: ReadMessageDto) {
